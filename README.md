@@ -18,7 +18,7 @@ Group 2:
 - Benefit: "Automating this process can be applied to many issues including monitoring port activity levels and supply chain analysis."
 
 ## Task
-Binary object classification on ships within the San Fransico Port
+Binary object classification on ships within the San Francisco Port
 
 ## Approach
 
