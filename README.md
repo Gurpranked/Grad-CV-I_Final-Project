@@ -22,7 +22,16 @@ Binary object classification on ships within the San Francisco Port
 
 ## Approach
 
-### A: 
+### A: Transformer Based Neural Network
+- Self-Attention Head
+- Encoder Only 
+- Patched input 
+- Sigmoid Activation 
 
+### B: CNN with K Nearest Neighbors 
+- Simple
+- Fast
+- Lightweight
+- Baseline Model
 
 ## Results (Abstract)
