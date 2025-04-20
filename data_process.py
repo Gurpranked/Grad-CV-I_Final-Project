@@ -7,6 +7,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from torchvision.transforms import v2
 from PIL import Image
+from torch.utils.data import Dataset
 
 
 load_dotenv()  
@@ -57,7 +58,23 @@ def load_image(path):
 
 
 class ShipsDataset(Dataset):
-    def __init__(self, )
+    def __init__(self, image_label_pairs: list[tuple], transform=None):
+        super().__init__()
+        self.image_label_pairs = image_label_pairs
+        if transform:
+            self.transform = transform
+        
+    def __len__(self):
+        return len(self.image_label_pairs)
+    
+    def __getitem__(self, index):
+        sample = self.image_label_pairs[index][0]
+
+        if self.transform:
+            sample = self.transform(self.image_label_pairs[index][0])
+        
+        return (sample, self.image_label_pairs[index][1])
+
 
 def data_process(ships_samples_amount=4000, nonships_samples_amount=4000):
     create_dir("formatted/train/ships")
@@ -68,7 +85,7 @@ def data_process(ships_samples_amount=4000, nonships_samples_amount=4000):
     create_dir("formatted/test/nonships")
 
     images_paths = os.list_dir(IMAGES_PATH)
-    labels = [int(path.split("__")[0] for path in images_paths)]
+    # labels = [int(path.split("__")[0] for path in images_paths)]
     
     ships_paths = []
     nonships_paths = []
@@ -78,7 +95,7 @@ def data_process(ships_samples_amount=4000, nonships_samples_amount=4000):
         if category == 0:
             nonships_paths.append(load_image(IMAGES_PATH + path))
         else:
-            ships_paths.append(Image.open(IMAGES_PATH + path))
+            ships_paths.append(load_image(IMAGES_PATH + path))
 
     
 

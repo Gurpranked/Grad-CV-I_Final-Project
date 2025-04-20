@@ -34,4 +34,18 @@ Binary object classification on ships within the San Francisco Port
 - Lightweight
 - Baseline Model
 
+Model Architecture:
+- Stem Portion
+  - TBD
+- Inception Module with Custom Aggreation (1)
+  - 1x1 Convolutional Layer $\rightarrow$ 3x3 Convolutional Layer 
+  - 1x1 Convolutional Layer $\rightarrow$ 5x5 Convolutional Layer 
+  - Max Pooling Layer 3x3 $\rightarrow$ 1x1 Convolution Layer
+
+![Inception Module](https://d2l.ai/_images/inception.svg)
+
+Produces a feature map to be used within the K Nearest Neighbor Model.
+- Euclidean Distance 
+- KNN Classifier with K=2 
+
 ## Results (Abstract)
