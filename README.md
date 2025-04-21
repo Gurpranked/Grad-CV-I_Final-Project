@@ -17,6 +17,25 @@ Group 2:
 - Works in conjunction with [Planet Developer Center](https://developers.planet.com/) API Key for additional scene context
 - Benefit: "Automating this process can be applied to many issues including monitoring port activity levels and supply chain analysis."
 
+## Preprocessing
+### A: Image Augmentation
+- Random rotations (0-360 degrees)
+- Random Horizontal Flip
+- Random Vertical Flip
+- Gaussian Blur (kernel size = (7, 7))
+
+### B: Image Padding
+- Supplement the image label pairs with augmentations to match the desired quantity
+- Desired total size of dataset size: 8000 samples
+  - Ship: 4000 samples (Valid)
+  - Non-Ship: 4000 samples (Invalid)
+
+### C: Dataset Split
+- Train: 70% $\rightarrow$  5600
+- Validation: 10% $\rightarrow$ 800
+- Test: 20% $\rightarrow$ 1600
+
+
 ## Task
 Binary object classification on ships within the San Francisco Port
 
@@ -46,6 +65,6 @@ Model Architecture:
 
 Produces a feature map to be used within the K Nearest Neighbor Model.
 - Euclidean Distance 
-- KNN Classifier with K=2 
+- KNN Classifier with K=2 (Binary classification)
 
 ## Results (Abstract)

@@ -7,8 +7,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from torchvision.transforms import v2
 from PIL import Image
-from torch.utils.data import Dataset
-
+from torch.utils.data import Dataset, DataLoader
 
 load_dotenv()  
 IMAGES_PATH = os.getenv('IMAGES_PATH')
@@ -39,7 +38,7 @@ def augment_image(image: PIL.Image):
 def pad_images_with_augmentations(original_images: list[PIL.Image], desired_size: int):
     
     """
-    Pad the image label pairs with augmentations to match the desired size
+    Supplement the image label pairs with augmentations to match the desired quantity
     """
     
     num_augmentations = max(1, (desired_size - len(original_images)) // len(original_images))
@@ -76,13 +75,24 @@ class ShipsDataset(Dataset):
         return (sample, self.image_label_pairs[index][1])
 
 
-def data_process(ships_samples_amount=4000, nonships_samples_amount=4000):
+def split_set(data_list: , split_ratio: float, shuffle=False):
+    if shuffle:
+       random.shuffle(data_list)
+    
+    split_index = int(len(data_list) * split_ratio)
+
+    return data_list[:split_index], data_list[split_index:]
+
+
+
+def data_process(ships_samples_target_amount=4000, nonships_samples_target_amount=4000, , train_split=0.8, val_split=0.1, random_seed = 42):
     create_dir("formatted/train/ships")
     create_dir("formatted/train/nonships")
     create_dir("formatted/val/ships")
     create_dir("formatted/val/nonships")
     create_dir("formatted/test/ships")
     create_dir("formatted/test/nonships")
+    random.seed(random_seed)
 
     images_paths = os.list_dir(IMAGES_PATH)
     # labels = [int(path.split("__")[0] for path in images_paths)]
@@ -105,5 +115,19 @@ def data_process(ships_samples_amount=4000, nonships_samples_amount=4000):
     padded_ships_with_labels = [(image, 1) for image in padded_ships]
     padded_nonships_with_labels = [(image, 0) for image in padded_nonships]
 
+    # Combine the images of both classes
     images_with_labels = padded_ships_with_labels + padded_nonships_with_labels
+
+    # Split the dataset into train, validation, and test sets
+    train_set, test_set = split_set(images_with_labels, train_split, shuffle=True)
+    train_set, val_set = split_set(train_set, val_split, shuffle=False)
+    
+    # Create the data loaders
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
+    
+
+
+
 

@@ -30,3 +30,14 @@ def VanillaInception(Module):
         b3 = functional.relu(self.b3_2(functional.relu(self.b3_1(x))))
         b4 = functional.relu(self.b4_2(self.b4_1(x)))
         return torch.cat((b1, b2, b3, b4), dim=1)
+
+def kNN(cloud, center, k):
+    center = center.expand(cloud.shape)
+
+    # L2 Distance
+    dist = cloud.add( - center).pow(2).sum(dim=3).pow(0.5)
+
+    # Get k nearest neighbors
+    knn_indices = dist.topk(k, largest=False, sorted=False)[1]
+
+    return cloud.gather(2, knn_indices.unsqueeze(-1).repeat(1,1,1,3))
