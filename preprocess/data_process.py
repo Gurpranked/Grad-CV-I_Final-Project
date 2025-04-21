@@ -103,7 +103,7 @@ def split_set(data_list: list, split_ratio: float, shuffle=False):
 
 
 
-def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_amount=4000, train_split=0.8, val_split=0.1, random_seed = 42):
+def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_amount=4000, train_split=0.8, val_split=0.1, random_seed = 42) -> tuple[DataLoader, DataLoader, DataLoader]:
     """
     Creates the dataloaders for train, validation and test sets 
     """

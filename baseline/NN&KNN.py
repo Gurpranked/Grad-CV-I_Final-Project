@@ -1,3 +1,7 @@
+# Author: Gurpreet Singh
+# Date: 4/21/2025
+# Description: This file contains the baseline model layer and module definitions
+
 import torch
 import numpy as np
 from torch.nn import Module, LazyConv2d, MaxPool2d, functional
@@ -41,3 +45,4 @@ def kNN(cloud, center, k):
     knn_indices = dist.topk(k, largest=False, sorted=False)[1]
 
     return cloud.gather(2, knn_indices.unsqueeze(-1).repeat(1,1,1,3))
+
