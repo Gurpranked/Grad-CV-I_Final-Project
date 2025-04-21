@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from torchvision.transforms import v2
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
+from numpy import dot
 
 load_dotenv()  
 IMAGES_PATH = os.getenv('IMAGES_PATH')
@@ -75,7 +76,7 @@ class ShipsDataset(Dataset):
         return (sample, self.image_label_pairs[index][1])
 
 
-def split_set(data_list: , split_ratio: float, shuffle=False):
+def split_set(data_list: list, split_ratio: float, shuffle=False):
     if shuffle:
        random.shuffle(data_list)
     
@@ -85,7 +86,7 @@ def split_set(data_list: , split_ratio: float, shuffle=False):
 
 
 
-def data_process(ships_samples_target_amount=4000, nonships_samples_target_amount=4000, , train_split=0.8, val_split=0.1, random_seed = 42):
+def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_amount=4000, batch_size=64, train_split=0.8, val_split=0.1, random_seed = 42):
     create_dir("formatted/train/ships")
     create_dir("formatted/train/nonships")
     create_dir("formatted/val/ships")
@@ -109,8 +110,8 @@ def data_process(ships_samples_target_amount=4000, nonships_samples_target_amoun
 
     
 
-    padded_ships = pad_images_with_augmentations(ships_paths, ships_samples_amount)
-    padded_nonships = pad_images_with_augmentations(nonships_paths, nonships_samples_amount)
+    padded_ships = pad_images_with_augmentations(ships_paths, ships_samples_target_amount)
+    padded_nonships = pad_images_with_augmentations(nonships_paths, nonships_samples_target_amount)
 
     padded_ships_with_labels = [(image, 1) for image in padded_ships]
     padded_nonships_with_labels = [(image, 0) for image in padded_nonships]
@@ -128,6 +129,6 @@ def data_process(ships_samples_target_amount=4000, nonships_samples_target_amoun
     test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
     
 
-
+    return train_loader, val_loader, test_loader
 
 
