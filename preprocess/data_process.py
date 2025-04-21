@@ -12,17 +12,17 @@ from numpy import dot
 
 load_dotenv()  
 IMAGES_PATH = os.getenv('IMAGES_PATH')
-ROOT_DATA_PATH = os.getnenv('ROOT_DATA_PATH')
+ROOT_DATA_PATH = os.getenv('ROOT_DATA_PATH')
 
     
 def create_dir(path):
     """
     Create a directory if it does not exist
     """
-    if not os.path.exists(path):
+    if not os.path.exists(ROOT_DATA_PATH + path):
         os.makedirs(ROOT_DATA_PATH + path)
 
-def augment_image(image: PIL.Image):
+def augment_image(image: torch.tensor):
     """
     Randomly apply one or more transformations to the image
     """
@@ -36,7 +36,7 @@ def augment_image(image: PIL.Image):
 
     return transform_pipeline(image)
 
-def pad_images_with_augmentations(original_images: list[PIL.Image], desired_size: int):
+def pad_images_with_augmentations(original_images: list[torch.tensor], desired_size: int):
     
     """
     Supplement the image label pairs with augmentations to match the desired quantity
@@ -52,17 +52,25 @@ def pad_images_with_augmentations(original_images: list[PIL.Image], desired_size
 
     return padded_images
 
-
 def load_image(path):
-    return Image.open(path)
+    """
+    Load an image from the given path
+    Normalizes and converts to Tensor [0, 255]
+    """
+    transform = v2.Compose([
+        v2.PILToTensor()
+    ])
+    return transform(Image.open(path))
 
 
 class ShipsDataset(Dataset):
-    def __init__(self, image_label_pairs: list[tuple], transform=None):
+    """
+    A dataset for the ships images
+    """
+    def __init__(self, image_label_pairs: list[tuple[torch.tensor, int]], transform=None):
         super().__init__()
         self.image_label_pairs = image_label_pairs
-        if transform:
-            self.transform = transform
+        self.transform = transform
         
     def __len__(self):
         return len(self.image_label_pairs)
@@ -72,11 +80,15 @@ class ShipsDataset(Dataset):
 
         if self.transform:
             sample = self.transform(self.image_label_pairs[index][0])
-        
+
         return (sample, self.image_label_pairs[index][1])
 
 
 def split_set(data_list: list, split_ratio: float, shuffle=False):
+    """
+    Splits the data list into two parts based on a split ratio
+    Also optionally shuffles the data list before splitting
+    """
     if shuffle:
        random.shuffle(data_list)
     
@@ -87,6 +99,9 @@ def split_set(data_list: list, split_ratio: float, shuffle=False):
 
 
 def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_amount=4000, batch_size=64, train_split=0.8, val_split=0.1, random_seed = 42):
+    """
+    Creates the dataloaders for train, validation and test sets 
+    """
     create_dir("formatted/train/ships")
     create_dir("formatted/train/nonships")
     create_dir("formatted/val/ships")
@@ -95,7 +110,7 @@ def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_am
     create_dir("formatted/test/nonships")
     random.seed(random_seed)
 
-    images_paths = os.list_dir(IMAGES_PATH)
+    images_paths = os.listdir(IMAGES_PATH)
     # labels = [int(path.split("__")[0] for path in images_paths)]
     
     ships_paths = []
@@ -107,8 +122,6 @@ def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_am
             nonships_paths.append(load_image(IMAGES_PATH + path))
         else:
             ships_paths.append(load_image(IMAGES_PATH + path))
-
-    
 
     padded_ships = pad_images_with_augmentations(ships_paths, ships_samples_target_amount)
     padded_nonships = pad_images_with_augmentations(nonships_paths, nonships_samples_target_amount)
@@ -122,13 +135,17 @@ def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_am
     # Split the dataset into train, validation, and test sets
     train_set, test_set = split_set(images_with_labels, train_split, shuffle=True)
     train_set, val_set = split_set(train_set, val_split, shuffle=False)
+
+    # Create Dataset
+    train_set = ShipsDataset(train_set, transform=None)
+    val_set = ShipsDataset(val_set, transform=None)
+    test_set = ShipsDataset(test_set, transform=None)
     
     # Create the data loaders
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
-    
-
+        
     return train_loader, val_loader, test_loader
 
 

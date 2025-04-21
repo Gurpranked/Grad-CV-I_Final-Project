@@ -1,4 +1,5 @@
 import os
+import torch
 from dotenv import load_dotenv
 from preprocess.data_process import get_dataloaders
 
@@ -8,6 +9,7 @@ def main():
     IMAGES_PATH = os.getenv('IMAGES_PATH')
     ROOT_DATA_PATH = os.getnenv('ROOT_DATA_PATH')
     BATCH_SIZE= os.getenv('BATCH_SIZE')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     train_loader, val_loader, test_loader = get_dataloaders(IMAGES_PATH, ROOT_DATA_PATH, BATCH_SIZE)
     
     
