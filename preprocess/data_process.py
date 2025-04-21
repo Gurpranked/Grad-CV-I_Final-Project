@@ -1,3 +1,7 @@
+# Author: Gurpreet Singh
+# Date: 4/21/2025
+# Description: This file contains the data processing and data loading functions
+
 import torch
 import os
 import random
@@ -10,11 +14,12 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from numpy import dot
 
+# Hyperparameters loaded from environment variables (.env file)
 load_dotenv()  
 IMAGES_PATH = os.getenv('IMAGES_PATH')
 ROOT_DATA_PATH = os.getenv('ROOT_DATA_PATH')
+BATCH_SIZE = os.getenv('BATCH_SIZE')
 
-    
 def create_dir(path):
     """
     Create a directory if it does not exist
@@ -31,7 +36,7 @@ def augment_image(image: torch.tensor):
         v2.RandomRotation(random.uniform(0, 360)),
         v2.RandomHorizontalFlip(p=1.0),
         v2.RandomVerticalFlip(p=1.0),
-        v2.GaussianBlur(kernel_size=(7, 7)),
+        v2.GaussianBlur(kernel_size=(3, 3)),
     ])
 
     return transform_pipeline(image)
@@ -98,7 +103,7 @@ def split_set(data_list: list, split_ratio: float, shuffle=False):
 
 
 
-def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_amount=4000, batch_size=64, train_split=0.8, val_split=0.1, random_seed = 42):
+def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_amount=4000, train_split=0.8, val_split=0.1, random_seed = 42):
     """
     Creates the dataloaders for train, validation and test sets 
     """
@@ -142,9 +147,9 @@ def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_am
     test_set = ShipsDataset(test_set, transform=None)
     
     # Create the data loaders
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
+    val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False)
+    test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False)
         
     return train_loader, val_loader, test_loader
 
