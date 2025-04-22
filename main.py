@@ -4,6 +4,7 @@ import argsparse
 from dotenv import load_dotenv
 from tqdm import tqdm
 from preprocess.data_process import get_dataloaders
+from torch.utils.data import DataLoader
 
 def main():
     # Arugment parsers
@@ -39,16 +40,23 @@ def main():
         train(model, loss_fn, optimizer, device, train_loader)
 
 
-def train(model: torch.nn.Module, loss_fn: torch.nn.Module, optimizer: torch.optim.Optimizer, device: torch.device, dataloader: DataLoader):
+def train(model: torch.nn.Module, loss_fn: torch.nn.Module, optimizer: torch.optim.Optimizer, device: torch.device, dataloader: torch.data.DataLoader):
     """
     Trains the model for one epoch on the given data loader.
     """
     model.train()
     train_loss = 0
+    
     for batch in tqdm(dataloader):
         images, labels = batch[0].to(device), batch[1].to(device)
+        
+        pred_logits = model(images)
+        loss = loss_fn(pred_logits, labels.float())
 
-
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    
 
 if __name__ == '__main__':
     # Your code here

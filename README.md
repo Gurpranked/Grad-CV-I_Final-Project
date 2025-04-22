@@ -55,7 +55,10 @@ Binary object classification on ships within the San Francisco Port
 
 Model Architecture:
 - Stem Portion
-  - TBD
+  - Flatten
+  - FC Linear Layer from 80 $\times$ 80 $\rightarrow$ 64
+  - BatchNorm1d(64)
+  - ReLU Activation
 - Inception Module with Custom Aggreation (1)
   - 1x1 Convolutional Layer $\rightarrow$ 3x3 Convolutional Layer 
   - 1x1 Convolutional Layer $\rightarrow$ 5x5 Convolutional Layer 
