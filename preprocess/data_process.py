@@ -18,7 +18,7 @@ from numpy import dot
 load_dotenv()  
 IMAGES_PATH = os.getenv('IMAGES_PATH')
 ROOT_DATA_PATH = os.getenv('ROOT_DATA_PATH')
-BATCH_SIZE = os.getenv('BATCH_SIZE')
+BATCH_SIZE = int(os.getenv('BATCH_SIZE'))
 
 def create_dir(path):
     """

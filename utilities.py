@@ -69,6 +69,7 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
               test_loader: torch.utils.data.DataLoader) -> tuple[float, float]:
     """
     Test the model for one epoch on the given data loader.
+    
     """
 
     test_loss, test_acc = 0, 0
@@ -89,7 +90,7 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
 
         test_loss /= len(test_loader)
         test_acc /= len(test_loader)
-        
+
     return (test_loss, test_acc)
 
 

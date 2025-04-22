@@ -7,7 +7,7 @@ import numpy as np
 from torch import nn
 
 # GoogLeNet Inception Module
-def VanillaInception(nn.Module):
+class VanillaInception(nn.Module):
     # Output channels for each branch 
     def __init__(self, c1, c2, c3, c4, **kwargs):
         super(VanillaInception, self).__init__(**kwargs)
@@ -34,19 +34,23 @@ def VanillaInception(nn.Module):
         b4 = nn.functional.relu(self.b4_2(self.b4_1(x)))
         return torch.cat((b1, b2, b3, b4), dim=1)
 
-def kNN(cloud, center, k):
-    center = center.expand(cloud.shape)
+# Define a kNN module in PyTorch
+class kNN(nn.Module):
+    def __init__(self, k, **kwargs):
+        super(kNN, self).__init__(**kwargs)
+        self.k = k
 
-    # L2 Distance
-    dist = cloud.add( - center).pow(2).sum(dim=3).pow(0.5)
+    # Forward pass, find the k nearest neighbors and return their average feature vector
+    def forward(self, x):
+        dists = torch.cdist(x, x).sort(dim=1)[0]
+        idxs = (dists.argsort(dim=1))[:, 1:self.k+1].view(-1)
+        x_avg = torch.zeros_like(x).float()
+        for i in range(idxs.shape[0]):
+            x_avg[i] = torch.mean(x[idxs[i]], dim=0, keepdim=True)
+        return x_avg
 
-    # Get k nearest neighbors
-    knn_indices = dist.topk(k, largest=False, sorted=False)[1]
-
-    return cloud.gather(2, knn_indices.unsqueeze(-1).repeat(1,1,1,3))
-
-def InceptionkNN(nn.Module):
-    def __init__(self):
+class InceptionkNN(nn.Module):
+    def __init__(self, k: int = 2):
         super(InceptionkNN, self).__init__()
 
         # Stem Portion
@@ -60,6 +64,11 @@ def InceptionkNN(nn.Module):
         # Inception Module with Custom Aggreation (1)
         self.inception = VanillaInception()
 
+        # kNN
+        self.knn = kNN(2)
+
+    # Compute forward pass
+    # Step -> inception module -> kNN -> Averaged feature vector
     def forward(self, x):
-        return self.stem(self.inception(x))
+        return self.stem(self.inception(self.knn(x)))
     
