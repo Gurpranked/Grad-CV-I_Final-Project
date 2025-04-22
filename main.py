@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 from preprocess.data_process import get_dataloaders
 from torch.utils.data import DataLoader
+from utilities import train_step
 
 def main():
     # Arugment parsers
@@ -32,31 +33,12 @@ def main():
     loss_fn = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
     
-    for epoch in range(EPOCHS):
+    for epoch in tqdm(range(EPOCHS)):
         if epoch % 10 == 0:
             print(f"Epoch {epoch + 1}/{EPOCHS}")
         
         # Train the model
-        train(model, loss_fn, optimizer, device, train_loader)
-
-
-def train(model: torch.nn.Module, loss_fn: torch.nn.Module, optimizer: torch.optim.Optimizer, device: torch.device, dataloader: torch.data.DataLoader):
-    """
-    Trains the model for one epoch on the given data loader.
-    """
-    model.train()
-    train_loss = 0
-    
-    for batch in tqdm(dataloader):
-        images, labels = batch[0].to(device), batch[1].to(device)
-        
-        pred_logits = model(images)
-        loss = loss_fn(pred_logits, labels.float())
-
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-    
+        train_step(model, loss_fn, optimizer, device, train_loader)
 
 if __name__ == '__main__':
     # Your code here
