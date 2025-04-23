@@ -36,7 +36,7 @@ def augment_image(image: torch.tensor):
         v2.RandomRotation(random.uniform(0, 360)),
         v2.RandomHorizontalFlip(p=1.0),
         v2.RandomVerticalFlip(p=1.0),
-        v2.GaussianBlur(kernel_size=(3, 3)),
+        v2.GaussianBlur(kernel_size=(3, 3))
     ])
 
     return transform_pipeline(image)
@@ -107,12 +107,12 @@ def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_am
     """
     Creates the dataloaders for train, validation and test sets 
     """
-    create_dir("formatted/train/ships")
-    create_dir("formatted/train/nonships")
-    create_dir("formatted/val/ships")
-    create_dir("formatted/val/nonships")
-    create_dir("formatted/test/ships")
-    create_dir("formatted/test/nonships")
+    # create_dir("formatted/train/ships")
+    # create_dir("formatted/train/nonships")
+    # create_dir("formatted/val/ships")
+    # create_dir("formatted/val/nonships")
+    # create_dir("formatted/test/ships")
+    # create_dir("formatted/test/nonships")
     random.seed(random_seed)
 
     images_paths = os.listdir(IMAGES_PATH)

@@ -4,14 +4,17 @@ import argsparse
 from dotenv import load_dotenv
 from tqdm import tqdm
 from preprocess.data_process import get_dataloaders
-from torch.utils.data import DataLoader
-from utilities import train_step
+from utilities import train_step, test_step
+from timeit import default_timer as timer
 
 def main():
     # Arugment parsers
     parsers = argsparse.ArgumentParser()
-    parsers.add_argument('--model', type=str, description='Which model to train', )
+    parsers.add_argument('--model', type=str, description='Which model to train', required=True)
     args = parsers.parse_args()
+
+    print("Friendly Reminder: All Hyperparameters are configured in the .env file. Please make sure to set all of them before running this script.")
+
 
     # Load environment variables
     load_dotenv()
@@ -33,12 +36,24 @@ def main():
     loss_fn = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
     
+    train_start_time = timer()
+
+    print("-----------Training starting----------")
     for epoch in tqdm(range(EPOCHS)):
         if epoch % 10 == 0:
             print(f"Epoch {epoch + 1}/{EPOCHS}")
         
         # Train the model
         train_step(model, loss_fn, optimizer, device, train_loader)
+        test_step(model, loss_fn, device, test_loader)
+    print("-----------Training finished----------")
+
+    train_end_time = timer()
+
+    total_train_time = train_end_time - train_start_time
+
+    print(f"Training completed in {total_train_time:.2f} seconds")
+
 
 if __name__ == '__main__':
     # Your code here
