@@ -145,6 +145,9 @@ def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_am
     train_set = ShipsDataset(train_set, transform=None)
     val_set = ShipsDataset(val_set, transform=None)
     test_set = ShipsDataset(test_set, transform=None)
+    torch.save(train_set, 'train_set.pt')
+    torch.save(val_set, 'val_set.pt')
+    torch.save(test_set, 'test_set.pt')
     
     # Create the data loaders
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)

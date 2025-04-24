@@ -101,6 +101,5 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
 
     return (test_loss, test_acc)
 
-def 
 
 
