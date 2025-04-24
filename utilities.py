@@ -28,8 +28,8 @@ def train_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
         dataloader: The data loader to use for training.
     @returns:
         A tuple containing:
-            - The averaged training loss
-            - The average training accuracy
+            - The batch averaged training loss
+            - The batch averaged training accuracy
     """
     model.train()
     train_loss = 0
@@ -69,7 +69,15 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
               test_loader: torch.utils.data.DataLoader) -> tuple[float, float]:
     """
     Test the model for one epoch on the given data loader.
-    
+    @args:
+        model: The model to be tested
+        loss_fn: The loss function to be used for testing
+        device: The device on which the model is running
+        test_loader: The data loader containing the test data
+    @returns:
+        A tuple containing:
+        - The batch averaged loss
+        - The batch averaged accuracy
     """
 
     test_loss, test_acc = 0, 0
@@ -93,5 +101,6 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
 
     return (test_loss, test_acc)
 
+def 
 
 
