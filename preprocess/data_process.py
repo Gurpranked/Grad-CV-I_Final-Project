@@ -128,18 +128,28 @@ def get_dataloaders(ships_samples_target_amount=4000, nonships_samples_target_am
         else:
             ships_paths.append(load_image(IMAGES_PATH + path))
 
-    padded_ships = pad_images_with_augmentations(ships_paths, ships_samples_target_amount)
-    padded_nonships = pad_images_with_augmentations(nonships_paths, nonships_samples_target_amount)
+    #Combine the RAW images & labels (no augmentation yet)
+    images_with_labels = (
+        [(img, 1) for img in ships_paths] +
+        [(img, 0) for img in nonships_paths]
+    )
 
-    padded_ships_with_labels = [(image, 1) for image in padded_ships]
-    padded_nonships_with_labels = [(image, 0) for image in padded_nonships]
-
-    # Combine the images of both classes
-    images_with_labels = padded_ships_with_labels + padded_nonships_with_labels
-
-    # Split the dataset into train, validation, and test sets
+    #Split into train / test, then split train -> train + val
     train_set, test_set = split_set(images_with_labels, train_split, shuffle=True)
-    train_set, val_set = split_set(train_set, val_split, shuffle=False)
+    train_set, val_set  = split_set(train_set,      val_split,   shuffle=False)
+
+    # AUGMENT ONLY THE TRAINING SPLIT
+    ships_to_pad    = [img for img, lbl in train_set if lbl == 1]
+    nonships_to_pad = [img for img, lbl in train_set if lbl == 0]
+
+    padded_ships    = pad_images_with_augmentations(ships_to_pad,    ships_samples_target_amount)
+    padded_nonships = pad_images_with_augmentations(nonships_to_pad, nonships_samples_target_amount)
+
+    padded_ships_with_labels    = [(img, 1) for img in padded_ships]
+    padded_nonships_with_labels = [(img, 0) for img in padded_nonships]
+
+    # Combine original + augmented training samples
+    train_set = train_set + padded_ships_with_labels + padded_nonships_with_labels
 
     # Create Dataset
     train_set = ShipsDataset(train_set, transform=None)
