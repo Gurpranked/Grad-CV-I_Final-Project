@@ -51,7 +51,6 @@ def pad_images_with_augmentations(original_images: list[torch.tensor], desired_s
         return original_images
 
     num_augmentations = desired_size - len(original_images)
-    print(f"Num Augmentations to compute: {num_augmentations}")
     augmented_images = []
     num_images = len(original_images)
 
@@ -71,7 +70,8 @@ def load_image(path):
     Normalizes and converts to Tensor [0, 255]
     """
     transform = v2.Compose([
-        v2.ToTensor()
+        v2.ToImage(),
+        v2.ToDtype(torch.float32, scale=True)
     ])
     return transform(Image.open(path))
 
@@ -159,9 +159,7 @@ def get_dataloaders(random_seed = 42) -> tuple[DataLoader, DataLoader, DataLoade
 
         # Pad the remaining images to 3000 for each class
         ships_padded = pad_images_with_augmentations(ships[test_size + val_size:], 3000)
-        print(f"Ships padded images: {len(ships_padded)}")
         nonships_padded = pad_images_with_augmentations(nonships[test_size + val_size:], 3000)
-        print(f"Ships non-padded images: {len(nonships_padded)}")
 
         # Add corresponding labels to all data
         test_ships_with_labels = [(image, 1) for image in test_ships]
