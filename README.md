@@ -1,4 +1,4 @@
-# Grad-CV-I_Final-Project
+p# Grad-CV-I_Final-Project
 Repo for Final Project of Grad Computer Vision I
 
 Group 2: 
@@ -19,21 +19,24 @@ Group 2:
 
 ## Preprocessing
 ### A: Image Augmentation
+Apply one of each to each image
 - Random rotations (0-360 degrees)
 - Random Horizontal Flip
 - Random Vertical Flip
-- Gaussian Blur (kernel size = (7, 7))
+- Gaussian Blur (kernel size = (3, 3))
+- Color Jitter
 
 ### B: Image Padding
 - Supplement the image label pairs with augmentations to match the desired quantity
-- Desired total size of dataset size: 8000 samples
-  - Ship: 4000 samples (Valid)
-  - Non-Ship: 4000 samples (Invalid)
+- Desired total size of train set size: 6K samples
+  - Ship: 650 Samples $\rightarrow$ 3K samples (+2.65K Samples)  (Valid)
+  - Non-Ship: 2.65K Samples $\rightarrow$ 3K Samples (+350 Samples) (Invalid)
 
 ### C: Dataset Split
-- Train: 70% $\rightarrow$  5600
-- Validation: 10% $\rightarrow$ 800
-- Test: 20% $\rightarrow$ 1600
+- Train: 6K Samples
+- Validation: 200 Samples
+- Test: 500 Samples 
+- Total Size: 6.7K Sampples
 
 
 ## Task
