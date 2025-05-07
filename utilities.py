@@ -230,3 +230,12 @@ def save_metrics(train_metrics: pd.DataFrame, val_metrics: pd.DataFrame, test_me
     plt.savefig("results/" + MODEL_TYPE + "/test_loss_accuracy_plot.png")
     plt.close()
 
+    # Save averaged results to file
+    results_df = pd.DataFrame(columns=["train_loss_avg", "train_acc_avg", 
+                                       "val_loss_avg", "val_acc_avg",
+                                       "test_loss_avg", "test_acc_avg"])
+    results_df.loc[0] = [train_metrics['train_loss'].mean(), train_metrics['train_acc'].mean(),
+                         val_metrics['val_loss'].mean(), val_metrics['val_acc'].mean(),
+                         test_metrics['test_loss'].mean(), test_metrics['test_acc'].mean()]
+    results_df.to_csv("results/" + MODEL_TYPE + "/metrics_avg.csv", index=False)
+
