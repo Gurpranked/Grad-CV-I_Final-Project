@@ -1,12 +1,14 @@
-# Author: Gurpreet Sing
+# Author: Gurpreet Singh
 # Date: 4/22/2025
 # Description: Various utility functions
+
 import torch
+import pandas as pd
 from tqdm import tqdm
 
 def accuracy_fn(y_true: torch.Tensor, y_pred: torch.Tensor) -> float:
     """
-    Compute the accuracy of the model on a given batch of data
+    Compute the accuracy of the model on a given BATCH of data
     @args:
         y_true: The true labels of the batch
         y_pred: The predicted labels of the batch
@@ -35,22 +37,20 @@ def train_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
     train_loss = 0
     train_acc = 0
     
-    for batch, (image, label) in enumerate(train_loader):
-        image, label = image.to(device), label.to(device)
+    # GT and Preds converted to float for loss function computations
+    for batch, (images, labels) in enumerate(train_loader):
+        images, labels = images.to(device), labels.to(device)
 
         # Forward pass
-        pred_logits = model(image)
+        pred_labels = model(images).argmax(dim=1)
 
         # Compute the loss
-        loss = loss_fn(pred_logits, label.float())
+        loss = loss_fn(pred_labels, labels)
         
-        # Obtain classification label probabilites 
-        pred_labels = torch.round(torch.sigmoid(pred_logits))
-
         # Accumulate the loss
         train_loss += loss.item()
         # Accumulate the accuracy
-        train_acc += accuracy_fn(label, pred_labels.argmax(dim=1))
+        train_acc += accuracy_fn(labels, pred_labels)
 
         # Optimizer zero grad
         optimizer.zero_grad()
@@ -64,9 +64,55 @@ def train_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
     # Return Averaged training loss and accuracy
     return (train_loss / len(train_loader), train_acc / len(train_loader))
 
+def val_step(model: torch.nn.Module, loss_fn: torch.nn.Module, 
+             device: torch.device, 
+             min_val_loss: float,
+             val_loader: torch.utils.data.DataLoader) -> tuple[float, float, float]:
+    """
+    Validate the model for one epoch on the given data loader.
+    The model automatically saves if there is an improvement 
+        in model's performance when compared to previous runs. 
+    @args:
+        model: The model to be validated
+        loss_fn: THe loss function to be used for validation
+        device: The device on which the model is running
+        val_loader: The data loader containing the validation data
+    @returns:
+        A tuple containing:
+        - The batch averaged loss
+        - The batch averaged accuracy
+    """
+
+    val_loss, val_acc = 0, 0
+    model.eval()
+
+    # GT and Preds converted to float for loss function computations
+    for batch, (images, labels) in enumerate(val_loader):
+        images, labels = images.to(device), labels.to(device).float()
+
+        # Forward pass
+        pred_labels = model(images)
+
+        # Accumulate loss
+        val_loss += loss_fn(pred_labels, labels).item()
+
+        # Accumulate accuracy
+        val_acc += accuracy_fn(labels, pred_labels.argmax(dim=1))
+
+    val_loss /= len(val_loader)
+    val_acc /= len(val_loader)
+
+    if val_loss > min_val_loss:
+        print(f"Validation Loss Decreased ({min_val_loss:.6f}) --->{val_loss:.6f} \t Saving model")
+        min_val_loss = val_loss
+        torch.save(model.state_dict(), "saved_model.pth")
+    
+    return (val_loss, val_acc, min_val_loss)
+
+
 def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module, 
               device: torch.device, 
-              test_loader: torch.utils.data.DataLoader) -> tuple[float, float]:
+              test_loader: torch.utils.data.DataLoader) -> pd.DataFrame:
     """
     Test the model for one epoch on the given data loader.
     @args:
@@ -75,31 +121,34 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
         device: The device on which the model is running
         test_loader: The data loader containing the test data
     @returns:
-        A tuple containing:
-        - The batch averaged loss
-        - The batch averaged accuracy
+        A Pandas Dataframe with two columns:
+            - `test_loss` - Per batch test loss
+            - `test_acc` - Per batch test accuracy
     """
 
     test_loss, test_acc = 0, 0
-    model.eval()
 
+    test_metrics = pd.DataFrame(columns=["test_loss", "test_acc"])
+
+    model.eval()
     with torch.inference_mode():
-        for batch, (image, label)  in enumerate(test_loader):
-            image, label = image.to(device), label.to(device)
+        # GT and Preds converted to float for loss function computations
+        for batch, (images, labels) in enumerate(test_loader):
+            images, labels = images.to(device), labels.to(device).float()
             
             # Forward pass
-            pred_label = model(image)
+            pred_labels = model(images)
             
             # Accumulate loss
-            test_loss += loss_fn(pred_label, label)
+            test_loss += loss_fn(pred_labels, labels)
 
             # Accumulate accuracy
-            test_acc += accuracy_fn(label, pred_label)
+            test_acc += accuracy_fn(labels, pred_labels.argmax(dim=1))
 
-        test_loss /= len(test_loader)
-        test_acc /= len(test_loader)
+            test_metrics["test_loss"].append(test_loss)
+            test_metrics["test_acc"].append(test_acc)
 
-    return (test_loss, test_acc)
+    return test_metrics
 
 
 

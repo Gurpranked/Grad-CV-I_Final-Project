@@ -1,10 +1,16 @@
+# Author: Gurpreet Singh
+# Date: 5/5/2025
+# Description: Driver Code for training and testing your choice of model
+
 import os
 import torch
 import argsparse
+import numpy as np
+import pandas as pd
 from dotenv import load_dotenv
 from tqdm import tqdm
 from preprocess.data_process import get_dataloaders
-from utilities import train_step, test_step
+from utilities import train_step, val_step, test_step
 from timeit import default_timer as timer
 
 def main():
@@ -14,7 +20,6 @@ def main():
     args = parsers.parse_args()
 
     print("Friendly Reminder: All Hyperparameters are configured in the .env file. Please make sure to set all of them before running this script.")
-
 
     # Load environment variables
     load_dotenv()
@@ -30,6 +35,12 @@ def main():
     # Set manual random seed
     torch.manual_seed(42)
 
+    train_metrics = pd.DataFrame(columns=["train_loss", "train_acc"])
+    val_metrics = pd.DataFrame(columns=["val_loss", "val_acc"])
+    test_metrics = pd.DataFrame(columns=["test_loss", "test_acc"])
+
+    min_val_loss = np.inf
+
     # Load the model
     # TODO: Specify class names for each model after they are implemented
     model = None if args.model == "baseline" else None
@@ -44,8 +55,13 @@ def main():
             print(f"Epoch {epoch + 1}/{EPOCHS}")
         
         # Train the model
-        train_step(model, loss_fn, optimizer, device, train_loader)
-        test_step(model, loss_fn, device, test_loader)
+        train_loss, train_acc = train_step(model, loss_fn, optimizer, device, train_loader)
+        train_metrics['train_loss'].append(train_loss)
+        train_metrics['train_acc'].append(train_acc)
+
+        val_loss, val_acc, min_val_loss = val_step(model, loss_fn, device, min_val_loss, val_loader)
+        val_metrics['val_loss'].append(val_loss)
+        val_metrics['val_acc'].append(val_acc)
     print("-----------Training finished----------")
 
     train_end_time = timer()
@@ -53,6 +69,22 @@ def main():
     total_train_time = train_end_time - train_start_time
 
     print(f"Training completed in {total_train_time:.2f} seconds")
+
+
+    # Testing
+    test_start_time = timer()
+
+    print("-----------Testing starting----------")
+    
+    test_step(model, loss_fn, device, test_loader)
+
+    print("-----------Testing finished----------")
+
+    test_end_time = timer()
+
+    total_test_time = test_end_time - test_start_time
+
+    print(f"Testing completed in {total_test_time:.2f} seconds")
 
 
 if __name__ == '__main__':
