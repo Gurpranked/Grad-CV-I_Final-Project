@@ -35,9 +35,9 @@ def main():
     # Set manual random seed
     torch.manual_seed(42)
 
+    # Initialize metrics
     train_metrics = pd.DataFrame(columns=["train_loss", "train_acc"])
     val_metrics = pd.DataFrame(columns=["val_loss", "val_acc"])
-    test_metrics = pd.DataFrame(columns=["test_loss", "test_acc"])
 
     min_val_loss = np.inf
 
@@ -57,12 +57,13 @@ def main():
         
         # Train the model
         train_loss, train_acc = train_step(model, loss_fn, optimizer, device, train_loader)
-        train_metrics['train_loss'].append(train_loss)
-        train_metrics['train_acc'].append(train_acc)
+        train_metrics.loc[epoch, 'train_loss'] = train_loss
+        train_metrics.loc[epoch, 'train_acc'] = train_acc
 
+        # Validate the model
         val_loss, val_acc, min_val_loss = val_step(model, loss_fn, device, min_val_loss, val_loader)
-        val_metrics['val_loss'].append(val_loss)
-        val_metrics['val_acc'].append(val_acc)
+        val_metrics.loc[epoch, 'val_loss'] = val_loss
+        val_metrics.loc[epoch, 'val_acc'] = val_acc
     print("-----------Training finished----------")
 
     train_end_time = timer()
@@ -71,13 +72,12 @@ def main():
 
     print(f"Training completed in {total_train_time:.2f} seconds")
 
-
     # Testing
     test_start_time = timer()
 
     print("-----------Testing starting----------")
     
-    test_step(model, loss_fn, device, test_loader)
+    test_metrics = test_step(model, loss_fn, device, test_loader)
 
     print("-----------Testing finished----------")
 
@@ -86,7 +86,6 @@ def main():
     total_test_time = test_end_time - test_start_time
 
     print(f"Testing completed in {total_test_time:.2f} seconds")
-
 
 if __name__ == '__main__':
     # Your code here

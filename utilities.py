@@ -5,6 +5,7 @@
 import os
 import torch
 import pandas as pd
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 def accuracy_fn(y_true: torch.Tensor, y_pred: torch.Tensor) -> float:
@@ -112,12 +113,13 @@ def val_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
     if val_loss < min_val_loss:
         print(f"\t\tValidation Loss Decreased ({min_val_loss:.6f}) --->{val_loss:.6f} \t Saving model")
         min_val_loss = val_loss
+        MODEL_TYPE = os.getenv("MODEL_TYPE")
         # If model saving path doesn't exist, make it
-        if (not os.path.exists('results' + os.getenv["MODEL_TYPE"])):
-            os.mkdir('results/' + os.getenv["MODEL_TYPE"])
+        if (not os.path.exists('results/' + MODEL_TYPE)):
+            os.mkdir('results/' + MODEL_TYPE + "/")
         
         # Serialize and save the model
-        torch.save(model.state_dict(), "results/" + os.getenv["MODEL_TYPE"] +  "saved_model.pt")
+        torch.save(model.state_dict(), "results/" + MODEL_TYPE +  "/saved_model.pt")
     
     return (val_loss, val_acc, min_val_loss)
 
@@ -168,5 +170,29 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
 
     return test_metrics
 
+def save_metrics(train_metrics: pd.DataFrame, val_metrics: pd.DataFrame, test_metrics: pd.DataFrame):
+    # Save metrics to csv
+    train_metrics.to_csv("results/" + str(os.getenv["MODEL_NAME"]) + "/train_metrics.csv", index=True)
+    val_metrics.to_csv("results/" + str(os.getenv["MODEL_NAME"]) + "/val_metrics.csv", index=True)
+    test_metrics.to_csv("results/"+ str(os.getenv["MODEL_NAME"]) + "/test_metrics.csv", index=True)
 
+    # Save metric plots
 
+    fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+    axs[0].set_title("Training and Validation Loss")
+    axs[0].plot(train_metrics['train_loss'], label='Training Loss')
+    axs[0].plot(val_metrics['val_loss'], label='Validation Loss')
+    axs[0].set_xlabel('Epochs')
+    axs[0].set_ylabel('Loss')
+    axs[0].legend()
+    
+    axs[1].set_title("Training and Validation Accuracy")
+    axs[1].plot(train_metrics['train_acc'], label='Training Accuracy')
+    axs[1].plot(val_metrics['val_acc'], label='Validation Accuracy')
+    axs[1].set_xlabel('Epochs')
+    axs[1].set_ylabel('Accuracy')
+    axs[1].legend()
+
+    plt.tight_layout()
+    plt.savefig("results/" + os.getenv["MODEL_NAME"] + "/loss_accuracy_plot.png")
+    plt.close()
