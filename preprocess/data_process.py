@@ -201,7 +201,7 @@ def get_dataloaders(random_seed = 42, regenerate=False) -> tuple[DataLoader, Dat
         test_set = ShipsDataset(test_set, transform=None)
         # If the directory doesn't exist, create it
         if (not os.path.exists('processed_data')):
-            os.makedirs('processed_data')
+            os.mkdir('processed_data')
 
         # Serialized and save the sets
         torch.save(train_set, 'processed_data/train_set.pt')
