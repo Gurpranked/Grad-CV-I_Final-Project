@@ -7,6 +7,7 @@ import torch
 import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from dotenv import load_dotenv
 
 def accuracy_fn(y_true: torch.Tensor, y_pred: torch.Tensor) -> float:
     """
@@ -171,10 +172,26 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
     return test_metrics
 
 def save_metrics(train_metrics: pd.DataFrame, val_metrics: pd.DataFrame, test_metrics: pd.DataFrame):
+    """
+    Saves the stored metrics from the training, validation, and test metric DataFrame objects.
+    Metrics stored in 'results/MODEL_TYPE' with MODEL_TYPE as the configured model that was just trained.
+    MODEL_TYPE is intended to be configured before training as an environment variable.
+
+    Args:
+        train_metrics (pd.DataFrame): Training metrics DataFrame object.
+        val_metrics (pd.DataFrame): Validation metrics DataFrame object.
+        test_metrics (pd.DataFrame): Test metrics DataFrame object.
+    
+    Returns:
+        None
+
+    """
+    MODEL_TYPE = str(os.getenv("MODEL_TYPE"))
+
     # Save metrics to csv
-    train_metrics.to_csv("results/" + str(os.getenv["MODEL_NAME"]) + "/train_metrics.csv", index=True)
-    val_metrics.to_csv("results/" + str(os.getenv["MODEL_NAME"]) + "/val_metrics.csv", index=True)
-    test_metrics.to_csv("results/"+ str(os.getenv["MODEL_NAME"]) + "/test_metrics.csv", index=True)
+    train_metrics.to_csv("results/" + MODEL_TYPE + "/train_metrics.csv", index=True)
+    val_metrics.to_csv("results/" + MODEL_TYPE + "/val_metrics.csv", index=True)
+    test_metrics.to_csv("results/"+ MODEL_TYPE + "/test_metrics.csv", index=True)
 
     # Save metric plots
 
@@ -194,5 +211,22 @@ def save_metrics(train_metrics: pd.DataFrame, val_metrics: pd.DataFrame, test_me
     axs[1].legend()
 
     plt.tight_layout()
-    plt.savefig("results/" + os.getenv["MODEL_NAME"] + "/loss_accuracy_plot.png")
+    plt.savefig("results/" + MODEL_TYPE + "/train_val__loss_accuracy_plot.png")
     plt.close()
+
+    fig, axs = plt.subplots(2, figsize=(8, 6))
+    axs[0].set_title("Testing Loss")
+    axs[0].plot(test_metrics['test_loss'], label='Test Loss')
+    axs[0].set_xlabel('Batches')
+    axs[0].set_ylabel('Loss')
+    axs[0].legend()
+
+    axs[1].set_title("Testing Accuracy")
+    axs[1].plot(test_metrics['test_acc'], label='Testing Accuracy')
+    axs[1].set_xlabel('Batches')
+    axs[1].set_ylabel('Accuracy')
+    axs[1].legend()
+    plt.tight_layout()
+    plt.savefig("results/" + MODEL_TYPE + "/test_loss_accuracy_plot.png")
+    plt.close()
+

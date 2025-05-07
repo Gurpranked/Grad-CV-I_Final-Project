@@ -10,7 +10,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from tqdm import tqdm
 from preprocess.data_process import get_dataloaders
-from utilities import train_step, val_step, test_step
+from utilities import train_step, val_step, test_step, save_metrics
 from timeit import default_timer as timer
 
 def main():
@@ -44,9 +44,16 @@ def main():
     # Load the model
     # TODO: Specify class names for each model after they are implemented
     model = None if args.model == "baseline" else None
+
+    # Set MODEL_TYPE for use in saving metrics and saving best model
     os.environ["MODEL_TYPE"] = args.model
-    loss_fn = torch.nn.BCELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+
+    # Dynamically set the loss function based on the model type 
+    loss_fn = lambda output, labels: torch.nn.functional.binary_cross_entropy_with_logits(
+        output, 
+        torch.nn.functional.one_hot(labels, num_classes=2).float()) if args.model == "transformer" else None
+    
+    optimizer = torch.optim.Adam(model.parameters(), lr=LR) 
     
     train_start_time = timer()
 
@@ -86,6 +93,14 @@ def main():
     total_test_time = test_end_time - test_start_time
 
     print(f"Testing completed in {total_test_time:.2f} seconds")
+
+    MODEL_TYPE = os.getenv("MODEL_TYPE")
+    print("Aggregating result metrics in results/" + MODEL_TYPE + ". Please wait...")
+    
+    save_metrics(train_metrics, val_metrics, test_metrics)
+
+    print("Results saved!")
+
 
 if __name__ == '__main__':
     # Your code here
