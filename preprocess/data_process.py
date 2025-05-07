@@ -113,7 +113,7 @@ def split_set(data_list: list, split_ratio_train: float, split_ratio_val: float,
 
 
 
-def get_dataloaders(random_seed = 42) -> tuple[DataLoader, DataLoader, DataLoader]:
+def get_dataloaders(random_seed = 42, regenerate=False) -> tuple[DataLoader, DataLoader, DataLoader]:
     """
     Creates the dataloaders for train, validation and test sets 
     Split size is hard-coded
@@ -136,16 +136,16 @@ def get_dataloaders(random_seed = 42) -> tuple[DataLoader, DataLoader, DataLoade
             - Testing Dataloader
     """
 
-    if os.path.exists('train_set.pt'):
-        train_set = torch.load('train_set.pt', weights_only=False)
+    if os.path.exists('processed_data/train_set.pt') and not regenerate:
+        train_set = torch.load('processed_data/train_set.pt', weights_only=False)
         print(f"Train Set Size: {len(train_set)}")
         train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
-    if os.path.exists('val_set.pt'):
-        val_set = torch.load('val_set.pt', weights_only=False)
+    if os.path.exists('processed_data/val_set.pt') and not regenerate:
+        val_set = torch.load('processed_data/val_set.pt', weights_only=False)
         print(f"Val Set Size: {len(val_set)}")
         val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False)
-    if os.path.exists('test_set.pt'):
-        test_set = torch.load('test_set.pt', weights_only=False)
+    if os.path.exists('processed_data/test_set.pt') and not regenerate:
+        test_set = torch.load('processed_data/test_set.pt', weights_only=False)
         print(f"Test Set Size: {len(test_set)}")
         test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False)
     else:    
@@ -199,9 +199,14 @@ def get_dataloaders(random_seed = 42) -> tuple[DataLoader, DataLoader, DataLoade
         train_set = ShipsDataset(train_set, transform=None)
         val_set = ShipsDataset(val_set, transform=None)
         test_set = ShipsDataset(test_set, transform=None)
-        torch.save(train_set, 'train_set.pt')
-        torch.save(val_set, 'val_set.pt')
-        torch.save(test_set, 'test_set.pt')
+        # If the directory doesn't exist, create it
+        if (not os.path.exists('processed_data')):
+            os.makedirs('processed_data')
+
+        # Serialized and save the sets
+        torch.save(train_set, 'processed_data/train_set.pt')
+        torch.save(val_set, 'processed_data/val_set.pt')
+        torch.save(test_set, 'processed_data/test_set.pt')
         
         # Create the data loaders
         train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
