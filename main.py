@@ -16,9 +16,14 @@ from timeit import default_timer as timer
 def main():
     # Arugment parsers
     parsers = argsparse.ArgumentParser()
-    parsers.add_argument('--model', type=str, description='Which model to train', required=True)
+    parsers.add_argument('--model', type=str, description='Which model to train', required=True, help="Must be one of the following: 'transformer', 'kNN&CNN', 'SVM&CNN'")
     args = parsers.parse_args()
 
+    # Validate arguments
+    if args.model not in ['transformer', 'kNN&CNN', 'SVM&CNN']:
+        parsers.print_help()
+        exit(1)
+    
     print("Friendly Reminder: All Hyperparameters are configured in the .env file. Please make sure to set all of them before running this script.")
 
     # Load environment variables
