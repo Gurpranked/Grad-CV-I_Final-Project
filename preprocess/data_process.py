@@ -180,12 +180,12 @@ def get_dataloaders(random_seed = 42) -> tuple[DataLoader, DataLoader, DataLoade
         nonships_padded = pad_images_with_augmentations(nonships[test_size + val_size:], 3000)
 
         # Add corresponding labels to all data
-        test_ships_with_labels = [(image, 1.0) for image in test_ships]
-        test_nonships_with_labels = [(image, 0.0) for image in test_nonships]
-        val_ships_with_labels = [(image, 1.0) for image in val_ships]
-        val_nonships_with_labels = [(image, 0.0) for image in val_nonships]
-        train_ships_with_labels = [(image, 1.0) for image in ships_padded]
-        train_nonships_with_labels = [(image, 0.0) for image in nonships_padded]
+        test_ships_with_labels = [(image, 1) for image in test_ships]
+        test_nonships_with_labels = [(image, 0) for image in test_nonships]
+        val_ships_with_labels = [(image, 1) for image in val_ships]
+        val_nonships_with_labels = [(image, 0) for image in val_nonships]
+        train_ships_with_labels = [(image, 1) for image in ships_padded]
+        train_nonships_with_labels = [(image, 0) for image in nonships_padded]
 
         # Combine and shuffle data for each set
         test_set = test_ships_with_labels + test_nonships_with_labels

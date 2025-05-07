@@ -19,7 +19,8 @@ def accuracy_fn(y_true: torch.Tensor, y_pred: torch.Tensor) -> float:
 
 def train_step(model: torch.nn.Module, loss_fn: torch.nn.Module, 
                optimizer: torch.optim.Optimizer, device: torch.device, 
-               train_loader: torch.utils.data.DataLoader) -> tuple[float, float]:
+               train_loader: torch.utils.data.DataLoader,
+               use_tqdm=False) -> tuple[float, float]:
     """
     Trains the model for one epoch on the given data loader.
     @args:
@@ -38,19 +39,21 @@ def train_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
     train_acc = 0
     
     # GT and Preds converted to float for loss function computations
-    for batch, (images, labels) in enumerate(train_loader):
+    for batch, (images, labels) in tqdm(enumerate(train_loader), disable=not use_tqdm,
+                                        desc="\tTraining: ", total=len(train_loader), unit="batches"):
         images, labels = images.to(device), labels.to(device)
 
         # Forward pass
-        pred_labels = model(images).argmax(dim=1)
+        # Logits for transformer implementation
+        preds = model(images)
 
         # Compute the loss
-        loss = loss_fn(pred_labels, labels)
+        loss = loss_fn(preds, labels)
         
         # Accumulate the loss
         train_loss += loss.item()
         # Accumulate the accuracy
-        train_acc += accuracy_fn(labels, pred_labels)
+        train_acc += accuracy_fn(labels, preds.argmax(1))
 
         # Optimizer zero grad
         optimizer.zero_grad()
@@ -67,7 +70,8 @@ def train_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
 def val_step(model: torch.nn.Module, loss_fn: torch.nn.Module, 
              device: torch.device, 
              min_val_loss: float,
-             val_loader: torch.utils.data.DataLoader) -> tuple[float, float, float]:
+             val_loader: torch.utils.data.DataLoader,
+             use_tqdm=False) -> tuple[float, float, float]:
     """
     Validate the model for one epoch on the given data loader.
     The model automatically saves if there is an improvement 
@@ -87,32 +91,35 @@ def val_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
     model.eval()
 
     # GT and Preds converted to float for loss function computations
-    for batch, (images, labels) in enumerate(val_loader):
-        images, labels = images.to(device), labels.to(device).float()
+    for batch, (images, labels) in tqdm(enumerate(val_loader), disable=not use_tqdm, 
+                                        desc="\t\tValidating: ", unit="batches", total=len(val_loader)):
+        images, labels = images.to(device), labels.to(device)
 
         # Forward pass
-        pred_labels = model(images)
+        # Logits for transformer implementation
+        preds = model(images)
 
         # Accumulate loss
-        val_loss += loss_fn(pred_labels, labels).item()
+        val_loss += loss_fn(preds, labels).item()
 
         # Accumulate accuracy
-        val_acc += accuracy_fn(labels, pred_labels.argmax(dim=1))
+        val_acc += accuracy_fn(labels, preds.argmax(1))
 
     val_loss /= len(val_loader)
     val_acc /= len(val_loader)
 
-    if val_loss > min_val_loss:
-        print(f"Validation Loss Decreased ({min_val_loss:.6f}) --->{val_loss:.6f} \t Saving model")
+    if val_loss < min_val_loss:
+        print(f"\t\tValidation Loss Decreased ({min_val_loss:.6f}) --->{val_loss:.6f} \t Saving model")
         min_val_loss = val_loss
-        torch.save(model.state_dict(), "saved_model.pth")
+        torch.save(model.state_dict(), "saved_model.pt")
     
     return (val_loss, val_acc, min_val_loss)
 
 
 def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module, 
               device: torch.device, 
-              test_loader: torch.utils.data.DataLoader) -> pd.DataFrame:
+              test_loader: torch.utils.data.DataLoader,
+              use_tqdm=True) -> pd.DataFrame:
     """
     Test the model for one epoch on the given data loader.
     @args:
@@ -127,26 +134,31 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
     """
 
     test_loss, test_acc = 0, 0
+    idx = 0
 
     test_metrics = pd.DataFrame(columns=["test_loss", "test_acc"])
 
     model.eval()
     with torch.inference_mode():
         # GT and Preds converted to float for loss function computations
-        for batch, (images, labels) in enumerate(test_loader):
-            images, labels = images.to(device), labels.to(device).float()
+        for batch, (images, labels) in tqdm(enumerate(test_loader), disable=not use_tqdm,
+                                            desc="\tTesting: ", total=len(test_loader), unit="batches"):
+            images, labels = images.to(device), labels.to(device)
             
             # Forward pass
-            pred_labels = model(images)
+            # Logits for transformer implementation
+            preds = model(images)
             
             # Accumulate loss
-            test_loss += loss_fn(pred_labels, labels)
+            test_loss = loss_fn(preds, labels).item()
 
             # Accumulate accuracy
-            test_acc += accuracy_fn(labels, pred_labels.argmax(dim=1))
+            test_acc = accuracy_fn(labels, preds.argmax(dim=1))
 
-            test_metrics["test_loss"].append(test_loss)
-            test_metrics["test_acc"].append(test_acc)
+            test_metrics.loc[idx, "test_loss"] = test_loss
+            test_metrics.loc[idx, "test_acc"] = test_acc
+            
+            idx += 1
 
     return test_metrics
 
