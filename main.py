@@ -44,6 +44,7 @@ def main():
     # Load the model
     # TODO: Specify class names for each model after they are implemented
     model = None if args.model == "baseline" else None
+    os.environ["MODEL_TYPE"] = args.model
     loss_fn = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
     

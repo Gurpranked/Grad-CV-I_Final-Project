@@ -2,6 +2,7 @@
 # Date: 4/22/2025
 # Description: Various utility functions
 
+import os
 import torch
 import pandas as pd
 from tqdm import tqdm
@@ -111,7 +112,12 @@ def val_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
     if val_loss < min_val_loss:
         print(f"\t\tValidation Loss Decreased ({min_val_loss:.6f}) --->{val_loss:.6f} \t Saving model")
         min_val_loss = val_loss
-        torch.save(model.state_dict(), "saved_model.pt")
+        # If model saving path doesn't exist, make it
+        if (not os.path.exists('results' + os.getenv["MODEL_TYPE"])):
+            os.mkdir('results/' + os.getenv["MODEL_TYPE"])
+        
+        # Serialize and save the model
+        torch.save(model.state_dict(), "results/" + os.getenv["MODEL_TYPE"] +  "saved_model.pt")
     
     return (val_loss, val_acc, min_val_loss)
 
@@ -142,7 +148,7 @@ def test_step(model: torch.nn.Module, loss_fn: torch.nn.Module,
     with torch.inference_mode():
         # GT and Preds converted to float for loss function computations
         for batch, (images, labels) in tqdm(enumerate(test_loader), disable=not use_tqdm,
-                                            desc="\tTesting: ", total=len(test_loader), unit="batches"):
+                                            desc="Testing: ", total=len(test_loader), unit="batches"):
             images, labels = images.to(device), labels.to(device)
             
             # Forward pass
