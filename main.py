@@ -2,6 +2,8 @@
 # Date: 5/5/2025
 # Description: Driver Code for training and testing your choice of model
 
+# NOTE: kNN & CNN and SVM were not implemented within this driver code, check `cnn.ipynb` for those implementations and results
+
 import os
 import torch
 import argsparse
@@ -12,15 +14,17 @@ from tqdm import tqdm
 from preprocess.data_process import get_dataloaders
 from utilities import train_step, val_step, test_step, save_metrics
 from timeit import default_timer as timer
+from torchvision.models import VisionTransformer
+
 
 def main():
     # Arugment parsers
     parsers = argsparse.ArgumentParser()
-    parsers.add_argument('--model', type=str, description='Which model to train', required=True, help="Must be one of the following: 'transformer', 'kNN&CNN', 'SVM&CNN'")
+    parsers.add_argument('--model', type=str, description='Which model to train', required=True, help="Must be the following: 'transformer'")
     args = parsers.parse_args()
 
     # Validate arguments
-    if args.model not in ['transformer', 'kNN&CNN', 'SVM&CNN']:
+    if args.model not in ['transformer']:
         parsers.print_help()
         exit(1)
     
@@ -29,10 +33,17 @@ def main():
     # Load environment variables
     load_dotenv()
     IMAGES_PATH = os.getenv('IMAGES_PATH')
-    ROOT_DATA_PATH = os.getnenv('ROOT_DATA_PATH')
-    BATCH_SIZE= os.getenv('BATCH_SIZE')
-    EPOCHS = os.getenv('EPOCHS')
-    LR = os.getenv('LR')
+    ROOT_DATA_PATH = os.getenv('ROOT_DATA_PATH')
+    BATCH_SIZE= int(os.getenv('BATCH_SIZE'))
+    EPOCHS = int(os.getenv('EPOCHS'))
+    LR = float(os.getenv('LR'))
+    PATCH_SIZE=int(os.getenv('PATCH_SIZE'))
+    DROPOUT=float(os.getenv('DROPOUT'))
+    ATTENTION_DROPOUT=float(os.getenv('ATTENTION_DROPOUT'))
+    HIDDEN_DIM=int(os.getenv('HIDDEN_DIM'))
+    MLP_DIM=int(os.getenv('MLP_DIM'))
+    NUM_HEADS=int(os.getenv('NUM_HEADS'))
+    NUM_LAYERS=int(os.getenv('NUM_LAYERS'))
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     train_loader, val_loader, test_loader = get_dataloaders(IMAGES_PATH, ROOT_DATA_PATH, BATCH_SIZE)
@@ -48,7 +59,11 @@ def main():
 
     # Load the model
     # TODO: Specify class names for each model after they are implemented
-    model = None if args.model == "baseline" else None
+    model = VisionTransformer(image_size=80, patch_size=PATCH_SIZE, num_layers=NUM_LAYERS, 
+                                       num_heads=NUM_HEADS, hidden_dim=HIDDEN_DIM, 
+                                       mlp_dim=MLP_DIM, dropout=DROPOUT,
+                                       attention_dropout=ATTENTION_DROPOUT,
+                                       num_classes=2) if args.model == "transformer" else None
 
     # Set MODEL_TYPE for use in saving metrics and saving best model
     os.environ["MODEL_TYPE"] = args.model

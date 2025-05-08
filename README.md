@@ -63,6 +63,16 @@ Architecture:
   - Attention Dropout: 0.1
   - Dropout: 0.1
 
+Code sourced in `transformer_sandbox.ipynb` and can be run using the driver code `main.py`
+
+Driver code usage:
+  - `python main.py --model transformer`
+  - Results saved in `results/transformer`
+    - Metrics
+    - Saved Model
+    - Performance plots
+  - 
+
 ### B: CNN with K Nearest Neighbors 
 - Simple
 - Fast
@@ -73,6 +83,7 @@ Architecture:
   - kNN Classifier with k=2
   - SVM Classifier
 
+Code sourced in `cnn.ipynb`.
 
 ![Inception Module](https://d2l.ai/_images/inception.svg)
 
