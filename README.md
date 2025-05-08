@@ -85,11 +85,5 @@ Driver code usage:
 
 Code sourced in `cnn.ipynb`.
 
-![Inception Module](https://d2l.ai/_images/inception.svg)
-
-Produces a feature map to be used within the K Nearest Neighbor Model.
-- Euclidean Distance - L2 Norm
-- KNN Classifier with K=2 (Binary classification)
-
 ## Results (Abstract)
 Presented in provided PDF Paper.
