@@ -20,7 +20,7 @@ from torchvision.models import VisionTransformer
 def main():
     # Arugment parsers
     parsers = argparse.ArgumentParser()
-    parsers.add_argument('--model', type=str, description='Which model to train', required=True, help="Must be the following: 'transformer'")
+    parsers.add_argument('--model', type=str, required=True, help="Must be the following: 'transformer'")
     args = parsers.parse_args()
 
     # Validate arguments
@@ -46,7 +46,7 @@ def main():
     NUM_LAYERS=int(os.getenv('NUM_LAYERS'))
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    train_loader, val_loader, test_loader = get_dataloaders(IMAGES_PATH, ROOT_DATA_PATH, BATCH_SIZE)
+    train_loader, val_loader, test_loader = get_dataloaders()
     
     # Set manual random seed
     torch.manual_seed(42)
@@ -64,6 +64,9 @@ def main():
                                        mlp_dim=MLP_DIM, dropout=DROPOUT,
                                        attention_dropout=ATTENTION_DROPOUT,
                                        num_classes=2) if args.model == "transformer" else None
+    
+    # Send model to device
+    model = model.to(device)
 
     # Set MODEL_TYPE for use in saving metrics and saving best model
     os.environ["MODEL_TYPE"] = args.model
