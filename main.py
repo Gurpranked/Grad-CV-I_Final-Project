@@ -81,9 +81,9 @@ def main():
     train_start_time = timer()
 
     print("-----------Training starting----------")
-    for epoch in tqdm(range(EPOCHS)):
-        if epoch % 10 == 0:
-            print(f"Epoch {epoch + 1}/{EPOCHS}")
+    for epoch in tqdm(range(0, EPOCHS), unit="EPOCHS", desc="Training (with per-epoch validation):"):
+        # if epoch % 10 == 0:
+        #     print(f"Epoch {epoch + 1}/{EPOCHS}")
         
         # Train the model
         train_loss, train_acc = train_step(model, loss_fn, optimizer, device, train_loader)
@@ -123,7 +123,6 @@ def main():
     save_metrics(train_metrics, val_metrics, test_metrics)
 
     print("Results saved!")
-
 
 if __name__ == '__main__':
     # Your code here
