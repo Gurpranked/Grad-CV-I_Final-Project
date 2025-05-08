@@ -6,7 +6,7 @@
 
 import os
 import torch
-import argsparse
+import argparse
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
@@ -19,7 +19,7 @@ from torchvision.models import VisionTransformer
 
 def main():
     # Arugment parsers
-    parsers = argsparse.ArgumentParser()
+    parsers = argparse.ArgumentParser()
     parsers.add_argument('--model', type=str, description='Which model to train', required=True, help="Must be the following: 'transformer'")
     args = parsers.parse_args()
 
