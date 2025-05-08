@@ -78,7 +78,7 @@ Driver code usage:
 - Lightweight
 - Baseline Model
 
-- Pretrained ResNet 18L
+- Pretrained ResNet 18:
   - kNN Classifier with k=2
   - SVM Classifier
 
