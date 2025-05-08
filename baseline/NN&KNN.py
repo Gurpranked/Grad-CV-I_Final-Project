@@ -58,7 +58,7 @@ class InceptionkNN(nn.Module):
             nn.Flatten(),
             nn.Linear(80 * 80, 64),
             nn.BatchNorm1d(64),
-            nn.ReLU()
+            nn.ReLU() 
         )
     
         # Inception Module with Custom Aggreation (1)
