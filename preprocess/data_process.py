@@ -143,11 +143,11 @@ def get_dataloaders(random_seed = 42, regenerate=False) -> tuple[DataLoader, Dat
     if os.path.exists('processed_data/val_set.pt') and not regenerate:
         val_set = torch.load('processed_data/val_set.pt', weights_only=False)
         print(f"Val Set Size: {len(val_set)}")
-        val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False)
+        val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=True)
     if os.path.exists('processed_data/test_set.pt') and not regenerate:
         test_set = torch.load('processed_data/test_set.pt', weights_only=False)
         print(f"Test Set Size: {len(test_set)}")
-        test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False)
+        test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=True)
     else:    
         random.seed(random_seed)
 
@@ -166,6 +166,8 @@ def get_dataloaders(random_seed = 42, regenerate=False) -> tuple[DataLoader, Dat
 
         test_size = 250
         val_size = 100
+
+        
 
         # Randomly sample 250 images from each category for test set
         test_ships = ships[:test_size]
@@ -210,7 +212,7 @@ def get_dataloaders(random_seed = 42, regenerate=False) -> tuple[DataLoader, Dat
         
         # Create the data loaders
         train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
-        val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False)
+        val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=True)
         test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=True)
 
     # Return the data loaders       
