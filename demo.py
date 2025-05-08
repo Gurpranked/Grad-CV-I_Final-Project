@@ -1,3 +1,9 @@
+# Author: Gurpreet Singh
+# Date: 5/7/2025
+# Description: Interactive Demo code for interacting with each model 
+
+# NOTE: This code is WIP and not guarenteed to be completed, a demo of the code functioning through videos is provided to supplement the demo of the project
+
 import torch
 import argparse
 from torchvision.models import VisionTransformer

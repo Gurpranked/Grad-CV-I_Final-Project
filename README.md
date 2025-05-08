@@ -38,7 +38,6 @@ Apply one of each to each image
 - Test: 500 Samples 
 - Total Size: 6.7K Sampples
 
-
 ## Task
 Binary object classification on ships within the San Francisco Port
 
@@ -48,7 +47,21 @@ Binary object classification on ships within the San Francisco Port
 - Self-Attention Head
 - Encoder Only 
 - Patched input 
-- Sigmoid Activation 
+- Sigmoid Activation (within Loss Function, implementation performance nuance in PyTorch)
+
+Architecture:
+- Same as ViT-Base from ["An Image with Worth 16x16 Words: Transformers for Image Recognition at Scale"](https://arxiv.org/pdf/2010.11929)
+- Image Patch Size: 10x10
+- Number of Transformer Layers: 6
+- Number of Attention Heads: 2
+- Hidden Dimension: 768
+- MLP Dimension: 3072
+- Hyperameters:
+  - Batch Size: 64
+  - Epochs: 100
+  - Learning Rate: 0.0001
+  - Attention Dropout: 0.1
+  - Dropout: 0.1
 
 ### B: CNN with K Nearest Neighbors 
 - Simple
@@ -56,16 +69,10 @@ Binary object classification on ships within the San Francisco Port
 - Lightweight
 - Baseline Model
 
-Model Architecture:
-- Stem Portion
-  - Flatten
-  - FC Linear Layer from 80 $\times$ 80 $\rightarrow$ 64
-  - BatchNorm1d(64)
-  - ReLU Activation
-- Inception Module with Custom Aggreation (1)
-  - 1x1 Convolutional Layer $\rightarrow$ 3x3 Convolutional Layer 
-  - 1x1 Convolutional Layer $\rightarrow$ 5x5 Convolutional Layer 
-  - Max Pooling Layer 3x3 $\rightarrow$ 1x1 Convolution Layer
+- Pretrained ResNet 18L
+  - kNN Classifier with k=2
+  - SVM Classifier
+
 
 ![Inception Module](https://d2l.ai/_images/inception.svg)
 
@@ -74,3 +81,4 @@ Produces a feature map to be used within the K Nearest Neighbor Model.
 - KNN Classifier with K=2 (Binary classification)
 
 ## Results (Abstract)
+Presented in provided PDF Paper.
