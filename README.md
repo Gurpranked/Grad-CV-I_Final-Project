@@ -71,7 +71,6 @@ Driver code usage:
     - Metrics
     - Saved Model
     - Performance plots
-  - 
 
 ### B: CNN with K Nearest Neighbors 
 - Simple
